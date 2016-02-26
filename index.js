@@ -1,7 +1,5 @@
 'use strict';
 const chalk = require('chalk');
-
-
 const STATUS_COLORS = {
   error: 'red',
   warn: 'yellow',
@@ -14,23 +12,28 @@ const STATUS_COLORS = {
  * @param {object} winstonInstance
  */
 function logger(winstonInstance) {
-  return function *middleWare(next) {
+  return async (ctx, next) => {
     const start = new Date();
-    yield next;
+    await next();
     const ms = new Date() - start;
 
     let logLevel;
-    if(this.status >=500) { logLevel = 'error'; }
-    if(this.status >=400) { logLevel = 'warn'; }
-    if(this.status >=100) { logLevel = 'info'; }
+    if (ctx.status >= 500) {
+      logLevel = 'error';
+    }
+    if (ctx.status >= 400) {
+      logLevel = 'warn';
+    }
+    if (ctx.status >= 100) {
+      logLevel = 'info';
+    }
 
-    let msg = (chalk.gray(`${this.method} ${this.originalUrl}`) +
-               chalk[STATUS_COLORS[logLevel]](` ${this.status} `) +
-               chalk.gray(`${ms}ms`));
+    let msg = (chalk.gray(`${ctx.method} ${ctx.originalUrl}`) +
+      chalk[STATUS_COLORS[logLevel]](` ${ctx.status} `) +
+      chalk.gray(`${ms}ms`));
 
     winstonInstance.log(logLevel, msg);
   };
 }
-
 
 module.exports = logger;
